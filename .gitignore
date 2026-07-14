@@ -1,0 +1,10 @@
+# 配布用zip（都度生成するのでコミット不要）
+oshise-memo-app.zip
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+*.swp
+
+# 依存（将来ビルドを入れた場合）
+node_modules/

@@ -1,0 +1,16 @@
+{
+  "name": "お店メモ",
+  "short_name": "お店メモ",
+  "description": "飲食店ごとに自分専用のメモを残せるアプリ",
+  "lang": "ja",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f2f7",
+  "theme_color": "#f7f7f9",
+  "icons": [
+    { "src": "icons/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" },
+    { "src": "icons/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" }
+  ]
+}

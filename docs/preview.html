@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>お店メモ プレビュー</title>
+<style>
+  /* ==== app/css/styles.css と同一のトークン・スタイル（抜粋） ==== */
+  :root{
+    --bg:#f2f2f7; --card:#fff; --text:#1c1c1e; --sub:#8e8e93; --line:#e2e2e7;
+    --accent:#007aff; --danger:#ff3b30; --navbar:rgba(247,247,249,.92);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#c9c9cf;font-family:-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--text);padding:24px}
+  h1{font-size:18px;font-weight:700;margin:0 0 4px}
+  .lead{color:#444;font-size:13px;margin:0 0 20px}
+  .stage{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:300px;background:var(--bg);border-radius:34px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25);border:6px solid #111}
+  .cap{color:#333;font-size:12px;text-align:center;margin:8px 0 0;width:300px}
+  .screen{height:600px;overflow:hidden;position:relative}
+
+  .navbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:14px 12px 8px;background:var(--navbar);border-bottom:.5px solid var(--line)}
+  .navbar .title{grid-column:2;text-align:center;font-size:17px;font-weight:600}
+  .navbar .left{grid-column:1;justify-self:start}
+  .navbar .right{grid-column:3;justify-self:end}
+  .nav-btn{border:0;background:transparent;color:var(--accent);font-size:17px;padding:6px 4px}
+  .nav-btn.plus{font-size:28px;font-weight:300;line-height:1}
+  .nav-btn.strong{font-weight:600}
+  .nav-btn.dim{color:var(--sub)}
+
+  .search-wrap{padding:10px 12px}
+  .search-wrap input{width:100%;border:0;background:var(--card);border-radius:10px;padding:10px 12px;font-size:15px;color:var(--sub)}
+  .list{padding:0 12px;display:flex;flex-direction:column;gap:10px}
+  .row{background:var(--card);padding:12px 14px;border-radius:12px}
+  .row .name{font-size:16px;font-weight:600;margin-bottom:3px}
+  .row .memo{font-size:14px;color:var(--sub);line-height:1.4}
+  .row .memo.empty{font-style:italic}
+  .row .date{font-size:12px;color:var(--sub);margin-top:6px}
+  .row.swiped{position:relative;transform:translateX(-70px);box-shadow:70px 0 0 var(--danger)}
+  .del-label{position:absolute;right:-58px;top:50%;transform:translateY(-50%);color:#fff;font-weight:600;font-size:14px}
+
+  .detail{padding:16px}
+  .detail .shop-name{font-size:24px;font-weight:700;margin:6px 0 20px}
+  .detail .section-label{font-size:13px;color:var(--sub);margin-bottom:6px}
+  .detail hr{border:0;border-top:.5px solid var(--line);margin:8px 0 14px}
+  .detail .memo-body{font-size:16px;line-height:1.7;white-space:pre-wrap}
+  .detail .updated{font-size:13px;color:var(--sub);margin-top:28px}
+
+  .form{padding:16px;display:flex;flex-direction:column;gap:6px}
+  .form label{font-size:13px;color:var(--sub);margin-top:12px}
+  .form input,.form textarea{border:0;background:var(--card);border-radius:10px;padding:12px;font-size:15px;font-family:inherit;color:var(--text)}
+  .form textarea{min-height:150px;line-height:1.6}
+  .form .ph{color:var(--sub)}
+  .form .helper{font-size:13px;color:var(--sub);margin-top:8px}
+  .btn-delete{margin-top:28px;border:0;background:var(--card);color:var(--danger);font-size:16px;font-weight:500;border-radius:10px;padding:14px;text-align:center}
+</style>
+</head>
+<body>
+  <h1>お店メモ — 3画面プレビュー</h1>
+  <p class="lead">実装した app/ の CSS・マークアップと同一のスタイルで描画（サンプルデータ）。一覧の1件目は左スワイプで削除ボタンが出た状態を再現。</p>
+
+  <div class="stage">
+
+    <!-- 画面1: 一覧 -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="navbar"><div class="title">お店メモ</div><button class="nav-btn right plus">＋</button></div>
+        <div class="search-wrap"><input value="店名・メモで検索" /></div>
+        <div class="list">
+          <div class="row swiped">
+            <div class="name">カフェ 青空</div>
+            <div class="memo">オーツミルクに変更。シロップは半分がちょうどよい。</div>
+            <div class="date">2026年7月14日 10:54 更新</div>
+            <span class="del-label">削除</span>
+          </div>
+          <div class="row">
+            <div class="name">メモ無しの店</div>
+            <div class="memo empty">メモなし</div>
+            <div class="date">2026年7月14日 10:54 更新</div>
+          </div>
+          <div class="row">
+            <div class="name">ラーメン燕</div>
+            <div class="memo">替え玉は固め。ニンニク少なめが好み。</div>
+            <div class="date">2026年7月14日 10:54 更新</div>
+          </div>
+        </div>
+      </div></div>
+      <p class="cap">① お店一覧（左スワイプ削除／検索／更新日時降順）</p>
+    </div>
+
+    <!-- 画面2: 詳細 -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="navbar"><button class="nav-btn left">‹ お店メモ</button><div class="title">お店詳細</div><button class="nav-btn right">編集</button></div>
+        <div class="detail">
+          <div class="shop-name">ラーメン燕</div>
+          <div class="section-label">メモ</div>
+          <hr />
+          <div class="memo-body">替え玉は固め。ニンニク少なめが好み。
+夜は行列。開店直後が狙い目。</div>
+          <div class="updated">2026年7月14日 10:54 更新</div>
+        </div>
+      </div></div>
+      <p class="cap">② お店詳細（更新日時のみ表示）</p>
+    </div>
+
+    <!-- 画面3: 編集 -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="navbar"><button class="nav-btn left">‹ 詳細</button><div class="title">お店を編集</div><button class="nav-btn right strong">保存</button></div>
+        <div class="form">
+          <label>店名</label>
+          <input value="ラーメン燕" />
+          <label>メモ</label>
+          <textarea>替え玉は固め。ニンニク少なめが好み。
+夜は行列。開店直後が狙い目。</textarea>
+          <div class="helper">注文内容、カスタマイズ、量の感想などを自由に記録できます。</div>
+          <div class="btn-delete">このお店を削除</div>
+        </div>
+      </div></div>
+      <p class="cap">③ 登録／編集（削除ボタン＋確認ダイアログ）</p>
+    </div>
+
+  </div>
+</body>
+</html>

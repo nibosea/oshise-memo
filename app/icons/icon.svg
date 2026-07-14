@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#ff8a3d"/>
+  <g fill="#ffffff">
+    <!-- フォーク -->
+    <rect x="150" y="120" width="16" height="150" rx="8"/>
+    <rect x="176" y="120" width="16" height="150" rx="8"/>
+    <rect x="202" y="120" width="16" height="150" rx="8"/>
+    <rect x="168" y="250" width="32" height="150" rx="16"/>
+    <!-- スプーン -->
+    <ellipse cx="330" cy="180" rx="34" ry="60"/>
+    <rect x="322" y="230" width="16" height="170" rx="8"/>
+  </g>
+</svg>
