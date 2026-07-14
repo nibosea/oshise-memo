@@ -1,7 +1,8 @@
 // sw.js — Service Worker（オフライン動作＆ホーム画面インストール用）
-// アプリシェルをキャッシュして、電波が無くても起動できるようにする。
+// 方針: ネットワーク優先。オンラインなら常に最新を取得し（push更新が即届く）、
+// オフライン時だけキャッシュから返す。install時のプリキャッシュは初回オフライン対策。
 
-const CACHE = 'oshise-memo-v1';
+const CACHE = 'oshise-memo-v2';
 const ASSETS = [
   '.',
   'index.html',
@@ -24,14 +25,14 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// キャッシュ優先（無ければネット取得してキャッシュに足す）
+// ネットワーク優先（成功したらキャッシュ更新、失敗＝オフライン時はキャッシュから）
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
+    fetch(e.request).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
       return res;
-    }).catch(() => hit))
+    }).catch(() => caches.match(e.request))
   );
 });

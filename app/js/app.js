@@ -59,8 +59,6 @@ window.addEventListener('DOMContentLoaded', render);
 let currentQuery = '';
 
 async function renderList() {
-  const shops = await ShopRepository.search(currentQuery);
-
   appEl.innerHTML = `
     <div class="navbar">
       <div class="title">お店メモ</div>
