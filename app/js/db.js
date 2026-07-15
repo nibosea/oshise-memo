@@ -86,6 +86,27 @@ const ShopRepository = (() => {
       await run('readwrite', s => s.delete(id));
     },
 
+    // インポート用の一括保存（id一致は上書き＝バックアップ復元・端末間統合に使う）
+    async bulkPut(shops) {
+      const now = Date.now();
+      let count = 0;
+      await run('readwrite', s => {
+        for (const raw of shops) {
+          if (!raw || typeof raw.name !== 'string' || !raw.name.trim()) continue;
+          s.put({
+            id: raw.id || ('shop_' + now.toString(36) + '_' + Math.random().toString(36).slice(2, 8)),
+            name: raw.name.trim(),
+            memo: typeof raw.memo === 'string' ? raw.memo : '',
+            createdAt: Number(raw.createdAt) || now,
+            updatedAt: Number(raw.updatedAt) || now,
+          });
+          count++;
+        }
+        return null;
+      });
+      return count;
+    },
+
     // 店名・メモ本文を部分一致で検索（大文字小文字は無視）
     async search(query) {
       const all = await this.getAll();

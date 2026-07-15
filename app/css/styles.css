@@ -221,3 +221,29 @@ html, body {
 .dialog .actions .destructive { color: var(--danger); font-weight: 600; }
 .dialog .actions .cancel { color: var(--accent); }
 .dialog .actions .default { color: var(--accent); font-weight: 600; }
+
+.dialog .help { font-size: 14px; line-height: 1.6; color: var(--text); text-align: left; }
+.dialog .help p { margin: 10px 0; }
+.dialog .help .mono { font-family: ui-monospace, monospace; background: var(--bg); padding: 1px 6px; border-radius: 5px; }
+
+/* ---- インストール案内バナー ---- */
+.install-banner {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 12px calc(var(--safe-bottom) + 12px);
+  padding: 12px 14px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.22);
+}
+.install-banner .ib-text { flex: 1; font-size: 13px; line-height: 1.4; }
+.install-banner .ib-how {
+  border: 0; background: rgba(255,255,255,.25); color: #fff;
+  font-size: 13px; font-weight: 600; padding: 7px 11px; border-radius: 8px; cursor: pointer;
+  white-space: nowrap;
+}
+.install-banner .ib-close { border: 0; background: transparent; color: #fff; font-size: 15px; cursor: pointer; padding: 4px; }

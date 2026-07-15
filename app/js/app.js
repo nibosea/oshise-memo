@@ -61,6 +61,7 @@ let currentQuery = '';
 async function renderList() {
   appEl.innerHTML = `
     <div class="navbar">
+      <button class="nav-btn left" id="menuBtn" aria-label="バックアップ">⋯</button>
       <div class="title">お店メモ</div>
       <button class="nav-btn right plus" id="addBtn" aria-label="お店を追加">＋</button>
     </div>
@@ -68,9 +69,12 @@ async function renderList() {
       <input id="search" type="search" placeholder="店名・メモで検索" value="${esc(currentQuery)}" />
     </div>
     <div class="list" id="list"></div>
+    ${installBannerHtml()}
   `;
 
   document.getElementById('addBtn').onclick = () => go('#/new');
+  document.getElementById('menuBtn').onclick = openBackupMenu;
+  wireInstallBanner();
 
   const search = document.getElementById('search');
   search.oninput = () => {
@@ -309,3 +313,139 @@ function confirmDialog({ title, message, okLabel, cancelLabel = 'キャンセル
   back.onclick = (e) => { if (e.target === back) { close(); onCancel && onCancel(); } };
   document.body.appendChild(back);
 }
+
+// ---- インストール案内バナー ------------------------------------------------
+
+function isInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function shouldShowInstallHint() {
+  return !isInstalled() && localStorage.getItem('installHintDismissed') !== '1';
+}
+function installBannerHtml() {
+  if (!shouldShowInstallHint()) return '';
+  return `
+    <div class="install-banner" id="installBanner">
+      <div class="ib-text">📲 ホーム画面に追加すると、アプリのように使えます</div>
+      <button class="ib-how" id="ibHow">追加方法</button>
+      <button class="ib-close" id="ibClose" aria-label="閉じる">✕</button>
+    </div>`;
+}
+function wireInstallBanner() {
+  const b = document.getElementById('installBanner');
+  if (!b) return;
+  document.getElementById('ibClose').onclick = () => { localStorage.setItem('installHintDismissed', '1'); b.remove(); };
+  document.getElementById('ibHow').onclick = () => {
+    const back = document.createElement('div');
+    back.className = 'backdrop';
+    back.innerHTML = `
+      <div class="dialog">
+        <div class="body">
+          <div class="d-title">ホーム画面に追加</div>
+          <div class="help">
+            <p><b>iPhone（Safari）</b><br>下の共有ボタン <span class="mono">□↑</span> →「ホーム画面に追加」</p>
+            <p><b>Android（Chrome）</b><br>右上メニュー <span class="mono">⋮</span> →「アプリをインストール」</p>
+          </div>
+        </div>
+        <div class="actions"><button class="default">閉じる</button></div>
+      </div>`;
+    back.querySelector('button').onclick = () => back.remove();
+    back.onclick = (e) => { if (e.target === back) back.remove(); };
+    document.body.appendChild(back);
+  };
+}
+
+// ---- バックアップ（エクスポート／インポート）------------------------------
+
+function openBackupMenu() {
+  const back = document.createElement('div');
+  back.className = 'backdrop';
+  back.innerHTML = `
+    <div class="dialog">
+      <div class="body"><div class="d-title">バックアップ</div>
+        <div class="d-msg">メモを書き出し／読み込みできます。機種変更やうっかり削除の備えに。</div>
+      </div>
+      <div class="actions">
+        <button class="default" id="bkExport">エクスポート（保存）</button>
+        <button class="default" id="bkImport">インポート（復元）</button>
+        <button class="cancel">キャンセル</button>
+      </div>
+    </div>`;
+  const close = () => back.remove();
+  back.querySelector('#bkExport').onclick = () => { close(); exportBackup(); };
+  back.querySelector('#bkImport').onclick = () => { close(); importBackup(); };
+  back.querySelector('.cancel').onclick = close;
+  back.onclick = (e) => { if (e.target === back) close(); };
+  document.body.appendChild(back);
+}
+
+async function exportBackup() {
+  const shops = await ShopRepository.getAll();
+  const data = { app: 'oshise-memo', version: 1, exportedAt: new Date().toISOString(), shops };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const d = new Date();
+  const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `oshise-memo-backup-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function alertDialog(title, message) {
+  const back = document.createElement('div');
+  back.className = 'backdrop';
+  back.innerHTML = `
+    <div class="dialog">
+      <div class="body"><div class="d-title">${esc(title)}</div>${message ? `<div class="d-msg">${esc(message)}</div>` : ''}</div>
+      <div class="actions"><button class="default">OK</button></div>
+    </div>`;
+  back.querySelector('button').onclick = () => back.remove();
+  back.onclick = (e) => { if (e.target === back) back.remove(); };
+  document.body.appendChild(back);
+}
+
+function importBackup() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json,.json';
+  input.onchange = () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let shops;
+      try {
+        const parsed = JSON.parse(reader.result);
+        shops = Array.isArray(parsed) ? parsed : parsed.shops;
+      } catch (e) { shops = null; }
+      if (!Array.isArray(shops)) {
+        alertDialog('読み込めませんでした', 'バックアップファイルの形式が正しくありません。');
+        return;
+      }
+      confirmDialog({
+        title: `${shops.length}件を読み込みますか？`,
+        message: '現在のデータに統合します（同じお店は上書き）。',
+        okLabel: '読み込む',
+        onOk: async () => {
+          const n = await ShopRepository.bulkPut(shops);
+          currentQuery = '';
+          await renderList();
+          alertDialog('読み込み完了', `${n}件のお店を読み込みました。`);
+        },
+      });
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ---- ストレージ永続化の申請（OSの自動削除を受けにくくする）-----------------
+window.addEventListener('DOMContentLoaded', () => {
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(() => {});
+  }
+});
